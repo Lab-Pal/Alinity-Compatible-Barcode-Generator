@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Alinity QC/Cal Barcode Generator</title>
+        <script src="https://cdn.jsdelivr.net/npm/bwip-js/dist/bwip-js-min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+        <style>
+        /* Body and general text */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FFAB00;
+            margin-bottom: 10px;
+        }
+
+        p.description {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 30px auto;
+            color: #CCCCCC;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        /* Form container */
+        .form-container {
+            background-color: #1E1E1E;
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto 20px auto;
+            padding: 18px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        table {
+            width: 100%;
+            font-size: 14px;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 8px 6px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0;
+        }
+
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 13px;
+        }
+
+        input::placeholder {
+            color: #999;
+        }
+
+        .rack-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        .rack-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            background-color: #2C2C2C;
+
+            padding: 6px 8px;
+
+            border-radius: 5px;
+            border: 1px solid #555;
+
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rack-option input {
+            width: auto;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .level-grid label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            background-color: #2C2C2C;
+
+            padding: 6px 8px;
+
+            border-radius: 5px;
+            border: 1px solid #555;
+
+            cursor: pointer;
+        }
+
+        .level-checkbox {
+            width: auto;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .level-note {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #AAAAAA;
+            line-height: 1.4;
+        }
+
+        /* Output Mode */
+        .printmode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin: 0 auto 15px auto;
+        }
+
+        .printmode-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            background-color: #2C2C2C;
+
+            padding: 6px 8px;
+
+            border-radius: 5px;
+            border: 1px solid #555;
+
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .printmode-option input {
+            width: auto;
+            transform: scale(1.1);
+            margin: 0;
+        }
+        
+        .compact-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            background-color: #2C2C2C;
+
+            padding: 4.5px 8px;
+
+            border-radius: 5px;
+            border: 1px solid #555;
+            
+            margin: 0 auto 15px auto;
+        }
+
+        .thermal-inline {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: nowrap;
+
+            margin: 0 auto 15px auto;
+            
+        }
+
+        .inline-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;           
+        }
+
+        .inline-group input {
+            width: 60px;
+            padding: 6px 8px;
+        }
+
+        /* Show Border*/
+        .checkbox-inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        background-color: #2C2C2C;
+        padding: 6px 8px;
+        border-radius: 5px;
+        border: 1px solid #555;
+
+        cursor: pointer;
+        user-select: none;
+
+        margin: 0 auto 15px auto;
+        }
+
+        .checkbox-inline input {
+            width: auto;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        button {
+            display: block;
+            background-color: #FFAB00;
+            color: #121212;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #FFA000;
+        }
+
+        button:disabled {
+            background-color: #5c513a;  /* Gray background */
+            color: #ccc;             /* Light gray text */
+            cursor: not-allowed;     /* Shows a not-allowed cursor */
+            opacity: 0.7;            /* Slight transparency for better UX */
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center; /* center both buttons */
+            gap: 10px; /* space between buttons */
+        }
+
+        #generateBtn {
+            /* Keep all original styles untouched */
+            display: inline-block;   /* changed from block for flex */
+            background-color: #FFAB00;
+            color: #121212;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.2;
+            transition: background-color 0.2s;
+        }
+
+        #generateBtn:hover {
+            background-color: #FFA000;
+        }
+
+        #resetBtn {
+            display: inline-block;   /* same as Generate */
+            background-color: #888888;
+            color: #121212;
+            font-weight: bold;
+            padding: 10px 20px;      /* match Generate */
+            border: none;        /* subtle border to differentiate from background */
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;          /* match Generate */
+            line-height: 1.2;         /* match Generate */
+            transition: background-color 0.2s;
+        }
+
+        #resetBtn:hover {
+            background-color: #AAAAAA;
+        }
+        .copyright {
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        /* Disclaimer */
+        .disclaimer {
+            text-align: center;
+            max-width: 650px;
+            margin: 20px auto 10px auto;
+            font-size: 11px;
+            color: #AAAAAA;
+            line-height: 1.4;
+        }
+
+        .disclaimer strong {
+            color: #FFAB00;
+        }
+
+        /* Buy Me a Coffee link */
+        .coffee-link {
+            text-align: center;
+            margin: 20px auto 40px auto;
+        }
+
+        /* disable coffelink */
+        .coffee-link a.disabled {
+            pointer-events: none;      /* Prevent clicking */
+            color: #888;               /* Gray color */
+            border-color: #888;        /* Match border if using button style */
+            opacity: 0.6;              /* Slightly faded */
+            cursor: not-allowed;       /* Show disabled cursor */
+            background-color: #333;    /* Optional subtle background */
+            text-decoration: none;
+        }
+
+        .coffee-link a {
+            text-decoration: none;
+            color: #FF813F;        /* Keep the original orange */
+            font-weight: bold;
+            font-size: 18px;        /* Slightly larger */
+            padding: 8px 15px;      /* Add a little padding for button-like feel */
+            border: 2px solid #FF813F;  /* Optional: outline */
+            border-radius: 8px;     /* Rounded corners for a “button” effect */
+            transition: all 0.2s;
+        }
+
+        .coffee-link a:hover {
+            color: #FFB347;         /* Slightly brighter on hover */
+            border-color: #FFB347;
+            background-color: #2C2C2C; /* Subtle hover background */
+            box-shadow: 0 0 8px #FFB347; /* Slight glow effect */
+        }
+
+        .coffee-text {
+            text-align: center;
+            color: #FFB347;       /* Warm, friendly color */
+            font-size: 14px;
+            margin-bottom: 12px;   /* Small space between text and button */
+            font-weight: 500;
+        }   
+
+        /* Attribution */
+        .attribution {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .attribution a {
+            color: #FFAB00;
+            text-decoration: none;
+        }
+
+        .attribution a:hover {
+            text-decoration: underline;
+        }
+
+        /* Table and inputs scale */
+        input, select, button {
+            font-size: 14px;     /* Slightly bigger for touch */
+            padding: 8px 10px;
+        }
+
+        /* Chrome, Edge, Safari, Opera */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* Coffee link responsive */
+        .coffee-link a {
+            font-size: 16px;
+            padding: 10px 20px;
+        }
+
+        /* Headings scale on mobile */
+        h2 {
+            font-size: 20px;
+        }
+
+        /* Description text smaller and readable */
+        p.description {
+            font-size: 13px;
+            padding: 0 10px;
+        }
+
+        .help-icon {
+
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 16px;
+            height: 16px;
+
+            margin-left: 6px;
+
+            border-radius: 50%;
+
+            background-color: #FFAB00;
+
+            color: #121212;
+
+            font-size: 11px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            vertical-align: middle;
+        }
+
+        .help-icon:hover {
+            background-color: #FFC107;
+        }
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            z-index: 999;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+
+            background-color: #1E1E1E;
+
+            color: #E0E0E0;
+
+            width: 90%;
+            max-width: 420px;
+
+            margin: 10% auto;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            border: 1px solid #444;
+
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+
+            position: relative;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #FFAB00;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+        }
+
+        .close-modal {
+
+            position: absolute;
+
+            top: 10px;
+            right: 15px;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            color: #AAA;
+        }
+
+        .close-modal:hover {
+            color: #FFF;
+        }
+
+        .print-instruction {
+            text-align: center;
+            font-size: 11px;
+            color: #AAAAAA;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .print-instruction strong {
+            color: #FFAB00;
+        }
+
+        @media (max-width: 600px) {
+
+            h2 {
+                font-size: 22px;
+                line-height: 1.3;
+            }
+
+            .description {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .disclaimer {
+                font-size: 12px;
+            }
+
+            body {
+                padding: 20px 12px;
+            }
+
+            table,
+            tbody,
+            tr,
+            td {
+                display: block;
+                width: 100%;
+            }
+
+            tr {
+                margin-bottom: 4px;
+            }
+
+            td {
+                padding: 4px 0;
+            }
+
+            td:first-child {
+                margin-bottom: 4px;
+            }
+
+            input,
+            select,
+            button {
+                font-size: 16px;
+            }
+
+            .rack-grid,
+            .level-grid,
+            .printmode-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .thermal-inline {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .inline-group {
+                width: 100%;
+                justify-content: right;
+            }
+
+            .inline-group input {
+                width: 100px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+
+            #generateBtn,
+            #resetBtn {
+                width: 100%;
+            }
+
+            .coffee-link a {
+                display: block;
+                text-align: center;
+            }
+
+            .modal-content {
+                margin-top: 20%;
+                width: calc(100% - 24px);
+            }
+
+            .button-row {
+                position: sticky;
+                bottom: 0;
+                background: #1E1E1E;
+                padding-top: 10px;
+                z-index: 10;
+            }
+            
+        }
+
+        </style>
+    </head>
+
+    <body>
+
+        <h2>QC Barcode Generator for Abbott Alinity Analyzers</h2>
+
+        <p class="description">
+            This tool generates QC barcode labels for Abbott Alinity analyzers. Barcodes are created in DataMatrix format for vial racks and Code 128 for sample racks, supporting automated QC processing.
+        </p>
+
+        <div class="form-container">
+            <table border="0">
+                <tr>
+                    <td valign="top">
+                        <label>
+                            Rack Type <span style="color:red;">*</span>
+                        </label>
+                    </td>
+
+                    <td>
+                        <div class="rack-grid">
+
+                            <label class="rack-option">
+                                <input
+                                    type="checkbox"
+                                    class="rack-checkbox"
+                                    value="Vial"
+                                >
+                                Vial rack
+                            </label>
+
+                            <label class="rack-option">
+                                <input
+                                    type="checkbox"
+                                    class="rack-checkbox"
+                                    value="Sample"
+                                >
+                                Sample rack
+                            </label>
+
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="productName">Product Name <span style="color:red;">*</span></label></td>
+                    <td><input type="text" id="productName" required></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="lotNumber">
+                            Lot Number <span style="color:red;">*</span>
+
+                            <span
+                                class="help-icon"
+                                id="lotHelpBtn"
+                                title="Lot Number Help"
+                            >
+                                ?
+                            </span>
+                        </label>
+                    </td>
+                    <td><input type="text" id="lotNumber" required></td>
+                </tr>
+
+                <tr>
+                    <td valign="top">
+                        <label>
+                            Levels <span style="color:red;">*</span>
+                        </label>
+                    </td>
+                    <td>
+                        <div class="level-grid">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    class="level-checkbox"
+                                    value="1"
+                                >
+                                Level 1
+                            </label>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    class="level-checkbox"
+                                    value="2"
+                                >
+                                Level 2
+                            </label>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    class="level-checkbox"
+                                    value="3"
+                                >
+                                Level 3
+                            </label>
+                        </div>
+                        <div class="level-note">
+                            Multiple levels may be selected.
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><label for="expiryDate">Expiration Date (optional)</label></td>
+                    <td><input type="tel" id="expiryDate" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10"></td>
+                </tr>
+                <tr>
+                    <td><label for="openStability">Open Stability (optional)</label></td>
+                    <td><input type="text" id="openStability"></td>
+                </tr>
+
+                <tr>
+                    <td valign="top">
+                        <label for="printModeAvery">Output Mode</label>
+                    </td>
+
+                    <td>
+
+                        <div class="printmode-grid">
+                            <label class="printmode-option">
+                                <input
+                                    type="checkbox"
+                                    name="printMode"
+                                    value="avery"
+                                    id="printModeAvery"
+                                >
+                                Full Sheet
+                            </label>
+
+                            <label class="printmode-option">
+                                <input
+                                    type="checkbox"
+                                    name="printMode"
+                                    value="thermal"
+                                    id="printModeThermal"
+                                >
+                                Custom (inch)
+                            </label>
+                        </div>
+
+                        <div id="averyInfo" class="compact-info" style="display:none;">
+                            <span class="compact-title">Avery 5195</span>
+                            <span class="compact-divider">•</span>
+                            <span>(60 labels)</span>
+                        </div>
+
+                        <div id="thermalSettings" class="thermal-inline" style="display:none;">
+
+                            <div class="inline-group">
+                                <span>H</span>
+                                <input
+                                    id="labelH"
+                                    type="number"
+                                    min="0.66"
+                                    step="0.01"
+                                    placeholder="0.66"
+                                >
+                            </div>
+                            <div class="inline-group">
+                                <span>W</span>
+                                <input
+                                    id="labelW"
+                                    type="number"
+                                    min="1.5"
+                                    step="0.01"
+                                    placeholder="1.75"
+                                >
+                            </div> 
+                            <div class="inline-group">
+                                <span>Qty</span>
+                                <input
+                                    id="labelQty"
+                                    type="number"
+                                    value="1"
+                                    min="1"
+                                    max="1000"
+                                >
+                            </div>
+                            
+
+                        </div>
+                        <div>
+                            <label class="checkbox-inline">
+                            <input type="checkbox" id="showBorder" aria-label="Toggle label borders">
+                            Show borders
+                            </label>
+                        </div>
+
+                    </td>
+                </tr>
+
+            </table>
+
+            <div class="button-row">
+                <button type="button" id="generateBtn" disabled>Generate Barcodes</button>
+                <button type="button" id="resetBtn">Reset</button>
+            </div>
+            <p class="print-instruction">
+                Print using <strong>Actual Size / 100% scale</strong> for proper Avery 5195 label alignment.
+            </p>
+        </div>
+
+        <div class="copyright">
+            © 2026 NoahLabo. All rights reserved.
+        </div>
+
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong>
+            This tool generates barcode labels for reference purposes only. Users are responsible for verifying all product information, lot numbers, and expiry dates before printing or using any generated labels. The author assumes no responsibility for any errors, omissions, or misuse of this tool or its outputs.
+
+            <br><br>
+
+            This is an independent utility and is not affiliated with, endorsed by, or sponsored by Abbott Laboratories. Alinity is a trademark of Abbott Laboratories.
+        </div>
+
+        <div class="coffee-link">
+            <p class="coffee-text">
+                Your support helps me keep creating—thank you!
+            </p>
+            <a class="disabled" href="https://www.buymeacoffee.com/yourusername" target="_blank">
+                ☕ Buy Me a Coffee
+            </a>
+        </div>
+
+        <!--div class="attribution">
+            Barcodes powered by <a href="https://github.com/metafloor/bwip-js" target="_blank">bwip-js</a> and PDF generation by <a href="https://github.com/parallax/jsPDF" target="_blank">jsPDF</a>.
+        </div-->
+
+        <div id="lotHelpModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeLotHelp">
+                    &times;
+                </span>
+
+                <h3>Lot Number Information</h3>
+
+                <p>
+                    Enter the lot number exactly as it is registered
+                    in the Alinity system.
+                </p>
+
+                <p>
+                    The barcode generated for vial and sample racks
+                    is based on this value. Incorrect formatting or
+                    mismatched lot numbers may prevent proper QC
+                    recognition by the analyzer.
+                </p>
+
+                </ul>
+            </div>
+        </div>
+        <script>
+            const dom = {
+            // Inputs
+            productName: document.getElementById('productName'),
+            lotNumber: document.getElementById('lotNumber'),
+            expiryDate: document.getElementById('expiryDate'),
+            openStability: document.getElementById('openStability'),
+
+            // Thermal settings
+            labelW: document.getElementById('labelW'),
+            labelH: document.getElementById('labelH'),
+            labelQty: document.getElementById('labelQty'),
+
+            // Buttons
+            generateBtn: document.getElementById('generateBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+
+            // Print mode
+            printModeAvery: document.getElementById('printModeAvery'),
+            printModeThermal: document.getElementById('printModeThermal'),
+
+            // UI
+            showBorder: document.getElementById('showBorder'),
+            thermalSettings: document.getElementById('thermalSettings'),
+            averyInfo: document.getElementById('averyInfo'),
+
+            // Modal
+            lotHelpBtn: document.getElementById('lotHelpBtn'),
+            lotHelpModal: document.getElementById('lotHelpModal'),
+            closeLotHelp: document.getElementById('closeLotHelp')
+            };
+
+            const expiryInput = dom.expiryDate;
+            const productNameInput = dom.productName;
+            const openStabilityInput = dom.openStability;
+            
+            // Show/Hide label borders checkbox
+            const formContainer = document.querySelector('.form-container');
+            const showBorderCheckbox = dom.showBorder;
+
+            const generateBtn = dom.generateBtn;
+            const rackCheckboxes =
+                document.querySelectorAll('.rack-checkbox');
+
+            const requiredFields = [
+                dom.productName,
+                dom.lotNumber
+            ];
+
+            const levelCheckboxes = document.querySelectorAll('.level-checkbox');
+
+            const AVERY_LABEL_WIDTH = 1.75;
+            const AVERY_LABEL_HEIGHT = 0.66;
+            const AVERY_LABEL_PADDING = 1.25;
+            const AVERY_LABEL_COLGAP = 0.3;
+            const AVERY_LABEL_MARGINTOP = 0.55;
+
+                        
+            // Print mode controls
+            const printModeCheckboxes =
+                document.querySelectorAll('input[name="printMode"]');
+            const printModeAvery = dom.printModeAvery;
+            const printModeThermal = dom.printModeThermal;
+            const thermalSettings = dom.thermalSettings;
+            const averyInfo = dom.averyInfo;
+
+            // Default = Full Sheet checked
+            printModeAvery.checked = true;
+
+            // Update UI
+            function updatePrintModeUI() {
+
+                // Only one checkbox selected at a time
+                if (printModeAvery.checked) {
+
+                    printModeThermal.checked = false;
+
+                    thermalSettings.style.display = 'none';
+
+                    averyInfo.style.display = 'block';
+
+                } else if (printModeThermal.checked) {
+
+                    printModeAvery.checked = false;
+
+                    thermalSettings.style.display = 'flex';
+
+                    averyInfo.style.display = 'none';
+
+                } else {
+
+                    // Prevent no selection
+                    printModeAvery.checked = true;
+
+                    thermalSettings.style.display = 'none';
+
+                    averyInfo.style.display = 'block';
+                }
+            }
+
+            // Checkbox listeners
+            printModeCheckboxes.forEach(cb => {
+
+                cb.addEventListener('change', () => {
+
+                    // If user tries to uncheck active option,
+                    // keep at least one selected
+                    if (!cb.checked) {
+                        cb.checked = true;
+                    }
+
+                    printModeCheckboxes.forEach(other => {
+                        if (other !== cb) other.checked = false;
+                    });
+
+                    updatePrintModeUI();
+                });
+            });
+
+            // Initial UI setup
+            updatePrintModeUI();
+
+            // Limit characters
+            productNameInput.addEventListener('input', e => {
+                if(e.target.value.length > 25) e.target.value = e.target.value.slice(0, 25);
+            });
+            openStabilityInput.addEventListener('input', e => {
+                if(e.target.value.length > 15) e.target.value = e.target.value.slice(0, 15);
+            });
+
+            dom.lotNumber.addEventListener('input', e => {
+                if (e.target.value.length > 20) {
+                    e.target.value = e.target.value.slice(0, 20);
+                }
+            });
+
+            // Auto-format expiry date
+            expiryInput.addEventListener('input', e => {
+                let value = e.target.value.replace(/\D/g,''); // remove non-digits
+
+                if(value.length > 2 && value.length <= 4) {
+                    value = value.slice(0,2) + '/' + value.slice(2);
+                } else if(value.length > 4 && value.length <= 8) {
+                    value = value.slice(0,2) + '/' + value.slice(2,4) + '/' + value.slice(4,8);
+                } else if(value.length > 8) {
+                    value = value.slice(0,2) + '/' + value.slice(2,4) + '/' + value.slice(4,8);
+                }
+
+                e.target.value = value;
+
+                if(value && !isValidExpiry(value)){
+                    expiryInput.style.borderColor = 'red';
+                    expiryInput.title = "Invalid date (MM/DD/YYYY)";
+                } else {
+                    expiryInput.style.borderColor = '#555';
+                    expiryInput.title = "";
+                }
+            });
+
+            // Validate expiry date
+            function isValidExpiry(expiryStr){
+                if(!expiryStr) return true;
+                const parts = expiryStr.split('/');
+                if(parts.length!==3) return false;
+                const month = parseInt(parts[0],10);
+                const day = parseInt(parts[1],10);
+                const year = parseInt(parts[2],10); // full year now
+                if(isNaN(month)||isNaN(day)||isNaN(year)) return false;
+                if(month<1||month>12) return false;
+                const maxDays=[31,(year%4===0&&(year%100!==0||year%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
+                if(day<1||day>maxDays[month-1]) return false;
+                return true;
+            }
+
+            // Random serial generator
+            function generateSerialSet(count) {
+                return Array.from({ length: count }, () =>
+                    String(Math.floor(Math.random() * 100000)).padStart(5, '0')
+                );
+            }
+
+            // Draw label border if option checked
+            function drawBorder(pdf, x, y, width, height) {
+                if(showBorderCheckbox.checked){
+                    pdf.setDrawColor('#555');
+                    pdf.setLineWidth(0.005);
+                    pdf.rect(x, y, width, height);
+                }
+            }
+
+            // Function to check if all required fields have values
+            function checkRequiredFields() {
+
+                const basicFieldsFilled =
+                    requiredFields.every(input =>
+                        input.value.trim() !== ''
+                    );
+
+                const levelSelected =
+                    [...levelCheckboxes].some(cb => cb.checked);
+
+                const rackSelected =
+                    [...rackCheckboxes].some(cb => cb.checked);
+
+                generateBtn.disabled =
+                    !(basicFieldsFilled && levelSelected && rackSelected);
+            }
+
+            // Add event listeners to required fields
+            requiredFields.forEach(input => {
+                input.addEventListener('input', checkRequiredFields);
+                input.addEventListener('change', checkRequiredFields); // for <select>
+            });
+            levelCheckboxes.forEach(cb => {
+                cb.addEventListener('change', checkRequiredFields);
+            });
+            rackCheckboxes.forEach(cb => {
+
+                cb.addEventListener('change', () => {
+
+                    // only allow ONE rack type selected
+                    rackCheckboxes.forEach(other => {
+                        if (other !== cb) other.checked = false;
+                    });
+
+                    checkRequiredFields();
+                });
+            });
+
+            // Initial check in case fields are pre-filled
+            checkRequiredFields();
+
+            // Generate Vial Label
+            async function generateVialLabel(pdf, x, y, availableWidth, availableHeight, innerPadding, gap, productName, lot, level, expiry, openStability, serial) {
+                //const serial = generateSerial();
+                const barcodeText = lot + level + serial;
+
+                const canvas = document.createElement('canvas');
+                await bwipjs.toCanvas(canvas, {
+                    bcid: 'datamatrixrectangular',
+                    text: barcodeText,
+                    rows: 12,
+                    columns: 26,
+                    scale: 4,
+                    includetext: false,
+                    rotate: 'R',
+                    padding: 0,
+                    eclevel: 'auto'
+                });
+
+                const rotatedRows = 26, rotatedCols = 12;
+                const barcodeHeight = availableHeight;
+                const barcodeWidth = barcodeHeight * (rotatedCols / rotatedRows);
+                const barcodeX = x + innerPadding, barcodeY = y + innerPadding;
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+
+                const textX = barcodeX + barcodeWidth + gap, textY = y + innerPadding, textWidth = availableWidth - barcodeWidth - gap;
+                let text = `${productName} L${level}\nLot: ${lot} SN: ${serial}`;
+                if (expiry) text += `\nExp: ${expiry}`;
+                if (openStability) text += `\nStability: ${openStability}`;
+                text += `\nOpen Date:`;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(4);
+                const lines = pdf.splitTextToSize(text, textWidth);
+                lines.forEach((line, idx) => {
+                    const lineY = textY + (4/72) + idx * 0.06;
+                    if (lineY <= y + availableHeight + innerPadding) pdf.text(line, textX, lineY);
+                });
+            }
+
+            // Generate Sample Label
+            async function generateSampleLabel(pdf, x, y, availableWidth, availableHeight, innerPadding, productName, lot, level, expiry, openStability) {
+                const barcodeText = "QQQ" + lot + level;
+
+                const canvas = document.createElement('canvas');
+                await bwipjs.toCanvas(canvas, {
+                    bcid: 'code128',
+                    text: barcodeText,
+                    scale: 2,
+                    includetext: false,
+                    padding: 0
+                });
+
+                const barcodeWidth = availableWidth * 0.75;
+                const barcodeHeight = availableHeight * 0.6;
+                const barcodeX = x + innerPadding;
+                const barcodeY = y + innerPadding;
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+
+                const textX = barcodeX;
+                const textY = barcodeY + barcodeHeight + 0.1;
+                let line1 = productName;
+                if(level) line1 += ` L${level}`;
+                if(expiry) line1 += ` Exp: ${expiry}`;
+                let line2 = `Lot: ${lot}`;
+                if(openStability) line2 += ` Stability: ${openStability}`;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(4);
+                pdf.text(line1, textX, textY);
+                pdf.text(line2, textX, textY + 0.06);
+            }
+
+            // Main Generate PDF Button
+            dom.generateBtn.addEventListener('click', async () => {
+                generateBtn.disabled = true;
+                generateBtn.textContent = "Generating...";
+
+                await new Promise(resolve => setTimeout(resolve, 0)); // allow UI update before heavy processing
+
+                try {
+                // generation
+                const rackType =
+                [...rackCheckboxes]
+                    .find(cb => cb.checked)?.value || "";
+                const productName =
+                dom.productName.value.trim();
+                const lot = dom.lotNumber.value.trim();
+
+                const selectedLevels = [...document.querySelectorAll('.level-checkbox:checked')]
+                    .map(cb => cb.value);
+
+                const expiry = dom.expiryDate.value.trim();
+                const openStability = dom.openStability.value.trim();
+
+                const printMode =
+                printModeThermal.checked ? 'thermal' : 'avery';
+                const thermalQty = Math.min(
+                    500,
+                    Math.max(1, parseInt(dom.labelQty.value || "1", 10))
+                );
+                const totalLabels =
+                    (printMode === "avery") ? 60 : thermalQty;
+
+                const { jsPDF } = window.jspdf;
+
+                // ✅ Thermal vs Avery sizing
+                let pdf;
+
+                if (printMode === "thermal") {
+                    const w =
+                parseFloat(dom.labelW.value) || 1.75;
+                    const h =
+                parseFloat(dom.labelH.value) || 0.66;
+
+                    pdf = new jsPDF({
+                        orientation: w > h ? 'landscape' : 'portrait',
+                        unit: 'in',
+                        format: [w, h]   // 🔥 custom thermal label size
+                    });
+                } else {
+                    pdf = new jsPDF({
+                        unit: 'in',
+                        format: 'letter'
+                    });
+                }
+
+                const cols = (printMode === "thermal") ? 1 : 4;
+
+                const labelWidth = 1.75;
+
+                const labelHeight = 0.66;
+
+                const h =
+                parseFloat(dom.labelH.value) || 0.66;
+                const w =
+                parseFloat(dom.labelW.value) || 1.75;
+
+                if (printMode === "thermal") {
+
+                    if (h < 0.66) {
+                        alert("Minimum thermal label height is 0.66 inches.");
+                        return;
+                    }
+
+                    if (w < 1.5) {
+                        alert("Minimum thermal label width is 1.5 inches.");
+                        return;
+                    }
+                }
+
+                const colGap = (printMode === "thermal") ? 0 : 0.3;
+
+                const rowGap = (printMode === "thermal") ? h - labelHeight : 0;
+
+                const marginLeft = (printMode === "thermal") ? 0 : 0.3;
+
+                const marginTop = (printMode === "thermal") ? 0 : 0.55;
+
+                const innerPadding = 0.125;
+                const gap = 0.125;
+
+                const availableWidth = labelWidth - 2 * innerPadding;
+                const availableHeight = labelHeight - 2 * innerPadding;
+
+                let globalIndex = 0;
+
+                for (let levelIndex = 0; levelIndex < selectedLevels.length; levelIndex++) {
+
+                    const level = selectedLevels[levelIndex];
+
+                const labelsForThisLevel =
+                    (printMode === "avery")
+                    ? Math.floor(totalLabels / selectedLevels.length)
+                    : totalLabels;
+
+                const serials = generateSerialSet(labelsForThisLevel);
+
+                for (let i = 0; i < labelsForThisLevel; i++) {
+
+                // Thermal mode = 1 label per page
+                if (printMode === "thermal") {
+                    if (globalIndex > 0) pdf.addPage();
+                } else {
+
+                    // Avery mode = continue filling same sheet
+                    const labelsPerPage = cols * Math.floor((11 - marginTop) / labelHeight);
+
+                    if (globalIndex > 0 && globalIndex % labelsPerPage === 0) {
+                        pdf.addPage();
+                    }
+                }
+
+                const serial = serials[i];
+
+                const currentIndex =
+                    (printMode === "thermal") ? 0 : globalIndex;
+
+                const col =
+                    (printMode === "thermal")
+                        ? 0
+                        : currentIndex % cols;
+
+                const row =
+                    (printMode === "thermal")
+                        ? 0
+                        : Math.floor(currentIndex / cols) %
+                        Math.floor((11 - marginTop) / labelHeight);
+
+                const x = marginLeft + col * (labelWidth + colGap);
+                const y = marginTop + row * (labelHeight + rowGap);
+
+                drawBorder(pdf, x, y, labelWidth, labelHeight);
+
+                if (rackType === "Vial") {
+                    await generateVialLabel(
+                        pdf, x, y,
+                        availableWidth, availableHeight,
+                        innerPadding, gap,
+                        productName, lot, level,
+                        expiry, openStability,
+                        serial   // 🔥 pass fixed serial
+                    );
+                    } else {
+                        await generateSampleLabel(
+                            pdf, x, y,
+                            availableWidth, availableHeight,
+                            innerPadding,
+                            productName, lot, level,
+                            expiry, openStability
+                        );
+                    }
+                    
+                globalIndex++;}
+                }
+
+
+                const safeName = productName.replace(/[<>:"/\\|?*]+/g, '_').replace(/\s+/g, '_');
+                pdf.save(`${safeName}_${printMode}.pdf`);
+
+
+                } catch (err) {
+                alert("Barcode generation failed.");
+                console.error(err);
+                } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = "Generate Barcodes";
+                }
+            });
+
+            const resetBtn = dom.resetBtn;
+
+            resetBtn.addEventListener('click', () => {
+                // Clear text inputs
+                rackCheckboxes.forEach(cb => cb.checked = false);
+                dom.productName.value = "";
+                dom.lotNumber.value = "";
+                dom.expiryDate.value = "";
+                dom.openStability.value = "";
+                dom.showBorder.checked = false;
+
+                expiryInput.style.borderColor = '#555';
+                expiryInput.title = ""; 
+                // Clear all level checkboxes
+                document.querySelectorAll('.level-checkbox').forEach(cb => cb.checked = false);
+
+                // -----------------------------
+                // Output mode
+                // Default back to Avery
+                // -----------------------------
+                printModeAvery.checked = true;
+                printModeThermal.checked = false;
+
+                // -----------------------------
+                // Thermal settings
+                // -----------------------------
+                dom.labelH.value = "";
+                dom.labelW.value = "";
+                dom.labelQty.value = "1";
+
+                // Reset thermal/Avery UI
+                updatePrintModeUI();
+                // Reset Generate button
+                checkRequiredFields();
+
+                // Focus first input
+                //document.getElementById('racktype').focus(); // remove
+            });
+            
+
+            const lotHelpBtn = dom.lotHelpBtn;
+
+            const lotHelpModal = dom.lotHelpModal;
+
+            const closeLotHelp = dom.closeLotHelp;
+
+            lotHelpBtn.addEventListener('click', () => {
+                lotHelpModal.style.display = 'block';
+            });
+
+            closeLotHelp.addEventListener('click', () => {
+                lotHelpModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+
+                if(e.target === lotHelpModal){
+                    lotHelpModal.style.display = 'none';
+                }
+            });
+
+        </script>
+    </body>
+</html>
