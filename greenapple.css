@@ -4,12 +4,12 @@
 
 :root{
     /* Green Apple Theme */
-    --bg:#F5F9F3;
+    --bg: #2D1B47;;
     --card:#FFFFFF;
     --border:#D8E5D3;
     --primary:#4EA64A;
     --primary-hover:#63BA5D;
-    --primary-dark:#1F5A28;
+    --primary-dark:#4EA64A;
     --text:#243424;
     --muted:#6B7A6B;
     --danger:#D63D3D;
@@ -25,9 +25,91 @@
     --shadow-lg:0 12px 28px rgba(0,0,0,.12);
 }
 
+
 /*======================================================
   LAYOUT
 ======================================================*/
+.feedback-fab{
+
+    position:fixed;
+
+    right:24px;
+    bottom:24px;
+
+    width:48px;
+    height:58px;
+
+    padding:0 12px 0 0px;
+
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+
+    gap:12px;
+
+    border-radius:999px;
+
+    background:var(--primary);
+    color:#fff;
+    text-decoration:none;
+
+    box-shadow:0 10px 20px rgba(0,0,0,.18);
+
+    overflow:hidden;
+    white-space:nowrap;
+
+    transition:
+        width .25s ease,
+        transform .2s,
+        background .2s,
+        box-shadow .2s;
+
+    z-index:9999;
+}
+
+.feedback-fab:hover{
+
+    width:235px;
+
+    background:var(--primary-hover);
+
+    transform:translateY(-3px);
+
+    box-shadow:0 14px 28px rgba(0,0,0,.25);
+
+}
+
+.feedback-icon{
+
+    font-size:26px;
+
+    flex-shrink:0;
+
+}
+
+.feedback-text{
+
+    opacity:0;
+
+    transform:translateX(12px);
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+
+    font-size:15px;
+    font-weight:600;
+
+}
+
+.feedback-fab:hover .feedback-text{
+
+    opacity:1;
+
+    transform:translateX(0);
+
+}
+
 body{
     margin:0;
     padding:0;
@@ -40,24 +122,58 @@ body{
 }
 
 .page{
-    max-width:1200px;
+    max-width:1300px;
     margin:auto;
     padding:20px 30px;
 }
-.top-nav{
+
+header{
     display:flex;
+    justify-content:space-between;
     align-items:center;
     min-height:40px;
 
-    margin-bottom:20px;
+    margin:20px 0;
 
-    background:var(--bg);
+    background:var(--card);
     border:1px solid var(--border);
     border-radius:16px;
 
     padding:0 20px;
 
     /*box-shadow:var(--shadow-sm);*/
+}
+
+.logo{
+
+    font-size:34px;
+
+    font-weight:700;
+
+    color:var(--bg)
+
+}
+
+nav{
+
+    display:flex;
+
+    gap:35px;
+
+}
+
+nav a{
+
+    color:var(--muted);
+
+    transition:.2s;
+
+}
+
+nav a:hover{
+
+    color:white;
+
 }
 .main-layout{
     display:grid;
@@ -166,7 +282,7 @@ footer {
     margin:10px 0 16px;
     font-size:16px;
     line-height:1.6;
-    color:var(--text);
+    color:var(--card);
 }
 
 .description span{
@@ -176,7 +292,7 @@ footer {
 
 .hero-title{
     margin:0;
-    color:var(--primary-dark);
+    color:var(--card);
     font-size:2.0rem;
     font-weight:700;
     line-height:1.15;

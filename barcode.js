@@ -46,7 +46,7 @@ appVersion: document.getElementById("appVersion"),
   CONSTANTS
 ======================================================*/
 const VERSION = {
-    app: "1.1.1",
+    app: "1.2.1",
     build: "2026-06-23"
 };
 dom.appVersion.textContent =
